@@ -1,0 +1,3 @@
+/Users/ogawa/oss/tir-pukiwiki/src/tir_pukiwiki/parser.py:324:  --pipe PIPE   Replacement for '|' in table cells during unparse (default: '｜')
+/Users/ogawa/oss/tir-pukiwiki/src/tir_pukiwiki/parser.py:334:    pipe = "｜"
+/Users/ogawa/oss/tir-pukiwiki/tests/cases/parse-pipe/run.sh:7:tir-pukiwiki parse < "$TIRENVI_ROOT/tests/data/sample.pukiwiki" | tir-pukiwiki unparse --pipe "🔥"

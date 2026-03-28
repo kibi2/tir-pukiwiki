@@ -1,0 +1,13 @@
+unknown sub command: help
+
+usage:
+  tir-pukiwiki parse   [file|-]
+  tir-pukiwiki unparse [--pipe PIPE] [file|-]
+  tir-pukiwiki --version
+
+Options:
+  --pipe PIPE   Replacement for '|' in table cells during unparse (default: '｜')
+
+If file is omitted or '-', parse reads from stdin.
+If file is omitted or '-', unparse writes to stdout.
+
