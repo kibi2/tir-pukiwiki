@@ -2,6 +2,7 @@
 
 import sys
 import json
+import re
 import csv
 from typing import Optional, Iterable, TypedDict
 
@@ -94,14 +95,6 @@ def input_col_count_pukiwiki(line: str) -> int:
     return tmp.count("|") - 1
 
 
-def normalize_cells(cells: list[str], ncol: int) -> list[str]:
-    if len(cells) < ncol:
-        cells += [""] * (ncol - len(cells))
-    elif len(cells) > ncol:
-        cells = cells[:ncol]
-    return cells
-
-
 # ------------------------------------------------------------
 # parse : pukiwiki -> TIR
 # ------------------------------------------------------------
@@ -141,7 +134,7 @@ def has_p_suffix(records):
     return False
 
 
-def flush_pain(records):
+def flush_plain(records):
     for index, record in enumerate(records):
         print_plain(record)
 
@@ -170,7 +163,7 @@ def flush_p(kind):
     if len(records) == 0:
         return
     if kind == "plain":
-        flush_pain(records)
+        flush_plain(records)
     elif kind == "csv":
         flush_csv(records)
     elif kind == "pipe":
@@ -190,6 +183,14 @@ def append_p_record(kind, ncol, record):
     records.append(record)
 
 
+def normalize_cell(cell: str) -> str:
+    return re.sub(r"&br;", "\n", cell, flags=re.IGNORECASE)
+
+
+def normalize_cells(cells: list[str]) -> list[str]:
+    return [normalize_cell(cell) for cell in cells]
+
+
 def parse(path=None):
     global prev_kind, prev_ncol, records
     lines = read_lines(path)
@@ -199,12 +200,13 @@ def parse(path=None):
     records = []
     for index, line in enumerate(lines):
         record = parse_pipe(line)
-        pipe_cells = record["cells"]
-        ncol = len(pipe_cells)
+        ncol = len(record["cells"])
         if ncol > 0:
+            record["cells"] = normalize_cells(record["cells"])
             append_p_record("pipe", ncol, record)
         elif is_csv_line(line):
             csv_cells = split_csv_row(line)
+            csv_cells = normalize_cells(csv_cells)
             ncol = len(csv_cells)
             append_p_record("csv", ncol, csv_cells)
         else:
@@ -224,8 +226,12 @@ def escape_cell(cell: str) -> str:
     return cell.replace("|", pipe)
 
 
+def denormalize_cell(cell: str) -> str:
+    return cell.replace("\n", "&br;")
+
+
 def format_pukiwiki_row(row: list[str], suffix) -> str:
-    cells = [escape_cell(c) for c in row]
+    cells = [escape_cell(denormalize_cell(c)) for c in row]
     line = "|" + "|".join(cells) + "|"
     if suffix:
         line += suffix
@@ -248,7 +254,7 @@ def has_w_suffix(records):
     return has_suffix
 
 
-def flush_w_pain(records):
+def flush_w_plain(records):
     global out_lines
     for index, record in enumerate(records):
         line = record.get("line")
@@ -272,7 +278,7 @@ def flush_w(records):
         return
     kind = records[0].get("kind")
     if kind == "plain":
-        flush_w_pain(records)
+        flush_w_plain(records)
     elif kind == "grid":
         flush_grid(records)
     records.clear()
